@@ -3,9 +3,19 @@ local transform_mod = require('telescope.actions.mt').transform_mod
 local actions = require('telescope.actions')
 local action_state = require('telescope.actions.state')
 
-function delete_bookmark(entry)
+local function bookmark_save_file(file)
+    if vim.g.bookmark_manage_per_buffer == 1 then
+        return vim.fn['g:BMBufferFileLocation'](file) or vim.loop.cwd() .. '/.vim-bookmarks'
+    elseif vim.g.bookmark_save_per_working_dir == 1 then
+        return vim.fn['g:BMWorkDirFileLocation']() or vim.loop.cwd() .. '/.vim-bookmarks'
+    end
+    return vim.g.bookmark_auto_save_file
+end
+
+local function delete_bookmark(entry)
     vim.fn['bm_sign#del'](entry.filename, tonumber(entry.value.sign_idx))
     vim.fn['bm#del_bookmark_at_line'](entry.filename, tonumber(entry.lnum))
+    vim.fn['BookmarkSave'](bookmark_save_file(vim.g.bm_current_file), 1)
 end
 
 local delete_at_cursor = function(prompt_bufnr)
